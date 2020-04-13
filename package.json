@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/JNasato/tinyapp/issues"
   },
-  "homepage": "https://github.com/JNasato/tinyapp#readme"
+  "homepage": "https://github.com/JNasato/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
