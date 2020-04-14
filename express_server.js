@@ -28,20 +28,22 @@ app.get('/', (req, res) => {
   res.send('Hello!');
 });
 
-app.get("/hello", (req, res) => {
+//
+app.get('/hello', (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
-});
+app.route('/urls')
+  .get((req, res) => {
+    const templateVars = { urls: urlDatabase };
+    res.render('urls_index', templateVars);
+  })
 
-//Post request from input form in /urls/new
-app.post("/urls", (req, res) => {
-  //Redirect to the shortURL code generated in function
-  res.redirect(`/urls/:${generateRandomString(req.body.longURL)}`);
-});
+    //Post request from input form in /urls/new
+  .post((req, res) => {
+    //Redirect to the shortURL code generated in function
+    res.redirect(`/urls/:${generateRandomString(req.body.longURL)}`);
+  });
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new.ejs');
@@ -54,10 +56,17 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 //Redirect user to long URL
-app.get("/u/:shortURL", (req, res) => {
+app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
+});
+
+//DELETE request
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.params.shortURL.slice(1);
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
