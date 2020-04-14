@@ -24,7 +24,11 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.post('/login')
+app.post('/login', (req, res) => {
+  res.cookie('name', req.body.username);
+  console.log(res.cookie);
+  res.redirect('/urls');
+});
 // app.get('/', (req, res) => {
 //   res.send('Hello!');
 // });
