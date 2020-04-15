@@ -16,7 +16,7 @@ const users = {
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
+  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
@@ -26,7 +26,7 @@ const users = {
 const emailLookUp = (users, emailCheck) => {
   for (let user in users) {
     if (users[user].email === emailCheck) {
-      return true;
+      return [true, users[user]];
     }
   }
   return false;
@@ -36,6 +36,15 @@ const generateRandomString = function(){
   return Math.random().toString(36).substr(2, 6);
 }
 
+//Create new URL
+app.get('/urls/new', (req, res) => {
+  const userID = req.cookies["user_id"];
+  const templateVars = {
+    userID,
+    user: users[userID],
+  };
+  res.render('urls_new', templateVars);
+});
 
 //DELETE request
 app.post('/urls/:shortURL/delete', (req, res) => {
@@ -71,16 +80,6 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
-//Create new URL
-app.get('/urls/new', (req, res) => {
-  const userID = req.cookies["user_id"];
-  const templateVars = {
-    userID,
-    user: users[userID],
-  };
-  res.render('urls_new', templateVars);
-});
-
 app.route('/urls')
   //Main page -> show URL database
   .get((req, res) => {
@@ -90,7 +89,6 @@ app.route('/urls')
       user: users[userID],
       urls: urlDatabase 
     };
-    console.log(users)
     res.render('urls_index', templateVars);
   })
   //Post request from input form in /urls/new
@@ -125,20 +123,42 @@ app.route('/register')
       password: req.body.password
     }
 
-    if(emailLookUp(users, req.body.email) || userObj.email === "" || userObj.password === "") {
-      // Window.alert('Status code 400: Unable to register');
-      res.status(400).redirect('/register');
+    if(emailLookUp(users, req.body.email)[0]) {
+      res.status(400).send('Status code 400: E-mail already exists');
+    } else if (userObj.email === "" || userObj.password === "") {
+      res.status(400).send('Status code 400: Please provide E-mail and password');
+    } else if (userObj.password.length < 4) {
+      res.status(400).send('Status code 400: Password must be at least 4 characters');
+    } else if (userObj.password !== req.body.password_confirm) {
+      res.status(400).send('Status code 400: Passwords do not match');
     } else {
       users[userRandomID] = userObj;
       res.cookie('user_id', userRandomID);
       res.redirect('/urls');
+      console.log(userObj);
     }
   });
 
-app.post('/login', (req, res) => {
-  // res.cookie('username', req.body.username);
-  res.redirect('/urls');
-});
+app.route('/login')
+  .get((req, res) => {
+    const userID = req.cookies["user_id"];
+    const templateVars = {
+      userID, 
+      user: users[userID],
+    };
+    res.render('login', templateVars);
+  })
+  .post((req, res) => {
+    const loginCheck = emailLookUp(users, req.body.email);
+    if(loginCheck[0]) {
+      if(loginCheck[1].password === req.body.password) {
+        res.cookie('user_id', loginCheck[1].id);
+        res.redirect('/urls');
+      }
+    } else {
+      res.status(403).send('Status code 403: Incorrect email or password');
+    }
+  });
 
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
