@@ -6,6 +6,7 @@ const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 
 const generateRandomString = function(longURL){
   let urlString = Math.random().toString(36).substr(2, 6);
@@ -24,23 +25,22 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.post('/login', (req, res) => {
-  res.cookie('name', req.body.username);
-  console.log(res.cookie);
+app.get('/', (req, res) => {
   res.redirect('/urls');
 });
-// app.get('/', (req, res) => {
-//   res.send('Hello!');
-// });
 
-// //
-// app.get('/hello', (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
 
 app.route('/urls')
   .get((req, res) => {
-    const templateVars = { urls: urlDatabase };
+    const templateVars = { 
+      username: req.cookies["username"],
+      urls: urlDatabase 
+    };
     res.render('urls_index', templateVars);
   })
   //Post request from input form in /urls/new
@@ -50,14 +50,20 @@ app.route('/urls')
   });
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new.ejs');
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render('urls_new', templateVars);
 });
 
 app.route('/urls/:shortURL')
   //show shortURL view after creating
   .get((req, res) => {
     const shortURL = req.params.shortURL.slice(1);
-    const templateVars = { "shortURL": shortURL, "longURL": urlDatabase[shortURL] };
+    const templateVars = { 
+      // username: req.cookies["username"],
+      "shortURL": shortURL, "longURL": urlDatabase[shortURL] 
+    };
     res.render('urls_show', templateVars);
   })
   //update specified longURL to use shortURL
