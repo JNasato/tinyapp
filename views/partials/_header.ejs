@@ -1,6 +1,6 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <a class="navbar-brand" href="/urls"><strong>TinyApp</strong></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -9,17 +9,21 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if(username === 'undefined'){ %>
-          <form class="form-inline" action="/login" method="POST">
-            <input class="form-control" type="text" name="username" placeholder="Username">
-            <button type="submit" class="btn btn-ouline-dark">Login</button>
-          </form>
+          <div>
+            <form class="form-inline" action="/login" method="POST">
+              <input class="form-control" type="text" name="username" placeholder="Username">
+              <button type="submit" class="btn btn-ouline-dark">Login</button>
+            </form>
+          </div>
         <% } else{ %>  
-          <h5>Loggin In As: <%= username %>!</h5>
-          <form class="form-inline" action="/login" method="POST">
-            <button type="submit" class="btn btn-ouline-dark">Logout</button>
-          </form>
+          <div>
+            <form class="form-inline" action="/login" method="POST">
+              <h6>Logged In As: <%= username %>!</h6>
+              <button type="submit" class="btn btn-ouline-dark">Logout</button>
+            </form>
+          </div>
        <% } %>
-      </div>
+      </div>    
     </div>
   </nav>
 </header>

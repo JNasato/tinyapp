@@ -8,6 +8,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
+const urlDatabase = {};
+
 const generateRandomString = function(longURL){
   let urlString = Math.random().toString(36).substr(2, 6);
   urlDatabase[urlString] = longURL;
@@ -15,10 +17,6 @@ const generateRandomString = function(longURL){
   return urlString;
 }
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
 
 //JSON for URL Database
 app.get('/urls.json', (req, res) => {
@@ -65,7 +63,7 @@ app.route('/urls/:shortURL')
   .get((req, res) => {
     const shortURL = req.params.shortURL.slice(1);
     const templateVars = { 
-      // username: req.cookies["username"],
+      username: req.cookies["username"],
       "shortURL": shortURL, "longURL": urlDatabase[shortURL] 
     };
     res.render('urls_show', templateVars);
