@@ -8,14 +8,19 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        
-        <p>Loggin In As: <%= username %>!</p>
-        <form class="form-inline" action="/login" method="POST">
-          <input class="form-control" type="text" name="username" placeholder="Username">
-          <button type="submit" class="btn btn-ouline-dark">Login</button>
-        </form>
-
+        <% if(username === 'undefined'){ %>
+          <form class="form-inline" action="/login" method="POST">
+            <input class="form-control" type="text" name="username" placeholder="Username">
+            <button type="submit" class="btn btn-ouline-dark">Login</button>
+          </form>
+        <% } else{ %>  
+          <h5>Loggin In As: <%= username %>!</h5>
+          <form class="form-inline" action="/login" method="POST">
+            <button type="submit" class="btn btn-ouline-dark">Logout</button>
+          </form>
+       <% } %>
       </div>
     </div>
   </nav>
 </header>
+
