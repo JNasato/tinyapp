@@ -8,19 +8,19 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
-const urlDatabase = {};
+const urlDatabase = {
+  'sgp3y6': { 
+    longURL: 'https://www.example.com', 
+    userID: 'userRandomID' 
+  }
+};
 
 const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "1234"
   },
-  "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
-  }
 };
 
 const emailLookUp = (users, emailCheck) => {
@@ -36,21 +36,28 @@ const generateRandomString = function(){
   return Math.random().toString(36).substr(2, 6);
 }
 
-//Create new URL
+//Page to create new URL
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies["user_id"];
   const templateVars = {
     userID,
     user: users[userID],
   };
-  res.render('urls_new', templateVars);
+  if(userID === undefined) {
+    res.redirect('/login');
+  } else {
+    res.render('urls_new', templateVars);
+  }
 });
 
 //DELETE request
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL = req.params.shortURL.slice(1);
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  const shortURL = req.params.shortURL;
+  console.log(urlDatabase[shortURL])
+  // if(req.cookies["user_id"] === urlDatabase[shortURL].userID) {
+  //   delete urlDatabase[shortURL];
+  // res.redirect('/urls');
+  // }
 });
 
 app.route('/urls/:shortURL')
@@ -61,7 +68,8 @@ app.route('/urls/:shortURL')
     const templateVars = { 
       userID,
       user: users[userID],
-      "shortURL": shortURL, "longURL": urlDatabase[shortURL] 
+      urls: urlDatabase,
+      "shortURL": shortURL, "longURL": urlDatabase[shortURL].longURL
     };
     res.render('urls_show', templateVars);
   })
@@ -76,7 +84,7 @@ app.route('/urls/:shortURL')
 //Redirect user to long URL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -94,8 +102,13 @@ app.route('/urls')
   //Post request from input form in /urls/new
   .post((req, res) => {
     //Redirect to the shortURL code generated in function
+    const userID = req.cookies["user_id"];
     const randomURL = generateRandomString();
-    urlDatabase[randomURL] = req.body.longURL;
+    longURL = req.body.longURL
+    urlDatabase[randomURL] = {
+      longURL,
+      userID
+    }
     res.redirect(`/urls/:${randomURL}`);
   });
 
