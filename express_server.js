@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 
@@ -9,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
 const urlDatabase = {
-  'sgp3y6': { 
+  'sgq3y6': { 
     longURL: 'https://www.example.com', 
     userID: 'userRandomID' 
   }
@@ -54,16 +55,18 @@ app.get('/urls/new', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   console.log(urlDatabase[shortURL])
-  // if(req.cookies["user_id"] === urlDatabase[shortURL].userID) {
-  //   delete urlDatabase[shortURL];
-  // res.redirect('/urls');
-  // }
+  if(req.cookies["user_id"] === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.send('Cannot delete URL');
+  }
 });
 
 app.route('/urls/:shortURL')
   //show shortURL view after creating
   .get((req, res) => {
-    const shortURL = req.params.shortURL.slice(1);
+    const shortURL = req.params.shortURL;
     const userID = req.cookies["user_id"];
     const templateVars = { 
       userID,
@@ -77,8 +80,12 @@ app.route('/urls/:shortURL')
   .post((req, res) => {
     const shortURL = req.params.shortURL;
     const longURL = req.body.longURL;
-    urlDatabase[shortURL] = longURL;
-    res.redirect('/urls')
+    if(req.cookies["user_id"] === urlDatabase[shortURL].userID) {
+      urlDatabase[shortURL] = longURL;
+      res.redirect('/urls')
+    } else {
+      res.send('Cannot edit URL');
+    }
   });
 
 //Redirect user to long URL
@@ -130,26 +137,29 @@ app.route('/register')
   //Add new user to users database
   .post((req, res) => {
     const userRandomID = generateRandomString();
-    const userObj = {
-      id: userRandomID,
-      email: req.body.email,
-      password: req.body.password
-    }
-
-    if(emailLookUp(users, req.body.email)[0]) {
-      res.status(400).send('Status code 400: E-mail already exists');
-    } else if (userObj.email === "" || userObj.password === "") {
-      res.status(400).send('Status code 400: Please provide E-mail and password');
-    } else if (userObj.password.length < 4) {
-      res.status(400).send('Status code 400: Password must be at least 4 characters');
-    } else if (userObj.password !== req.body.password_confirm) {
-      res.status(400).send('Status code 400: Passwords do not match');
-    } else {
-      users[userRandomID] = userObj;
-      res.cookie('user_id', userRandomID);
-      res.redirect('/urls');
-      console.log(userObj);
-    }
+    const password = req.body.password;
+    bcrypt.hash(password, 10).then((hashedPassword) => {
+      const userObj = {
+        id: userRandomID,
+        email: req.body.email,
+        password: hashedPassword
+      }
+      
+      if(emailLookUp(users, req.body.email)[0]) {
+        res.status(400).send('Status code 400: E-mail already exists');
+      } else if (userObj.email === "" || req.body.password === "") {
+        res.status(400).send('Status code 400: Please provide E-mail and password');
+      } else if (req.body.password.length < 4) {
+        res.status(400).send('Status code 400: Password must be at least 4 characters');
+      } else if (req.body.password !== req.body.password_confirm) {
+        res.status(400).send('Status code 400: Passwords do not match');
+      } else {
+        users[userRandomID] = userObj;
+        console.log(users);
+        res.cookie('user_id', userRandomID);
+        res.redirect('/urls');       
+      }
+    });
   });
 
 app.route('/login')
@@ -164,10 +174,12 @@ app.route('/login')
   .post((req, res) => {
     const loginCheck = emailLookUp(users, req.body.email);
     if(loginCheck[0]) {
-      if(loginCheck[1].password === req.body.password) {
-        res.cookie('user_id', loginCheck[1].id);
-        res.redirect('/urls');
-      }
+      bcrypt.compare(loginCheck[1].password, hash, function(err, res) {
+        if(res) {
+          res.cookie('user_id', loginCheck[1].id);
+          res.redirect('/urls');
+        }
+      }); 
     } else {
       res.status(403).send('Status code 403: Incorrect email or password');
     }
