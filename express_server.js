@@ -12,10 +12,10 @@ const PORT = 8080;
 
 app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 app.set('view engine', 'ejs');
@@ -56,6 +56,7 @@ app.delete('/urls/:shortURL/d', (req, res) => {
   }
 });
 
+
 app.route('/urls/:shortURL')
   //show shortURL view after creating
   .get((req, res) => {
@@ -81,6 +82,7 @@ app.route('/urls/:shortURL')
     }
   });
 
+
 app.route('/urls')
   //Main page -> show URL database
   .get((req, res) => {
@@ -98,13 +100,14 @@ app.route('/urls')
     const randomURL = generateRandomString(6);
     const longURL = req.body.longURL;
     const userID = req.session.user_id;
-    urlDatabase[randomURL] = {
-      longURL,
-      userID
-    };
+
     if (userID === undefined) {
       res.send('Please log in to create your TinyURL');
     } else {
+      urlDatabase[randomURL] = {
+        longURL,
+        userID
+      };
       res.redirect(`/urls/:${randomURL}`);
     }
   });
@@ -169,7 +172,7 @@ app.route('/login')
     const userEmail = req.body.email;
     const user = getUserByEmail(users, userEmail);
     if (emailLookUp(users, userEmail)) {
-      bcrypt.compare(req.body.password, user.password, function(err, result) {
+      bcrypt.compare(req.body.password, user.password, function (err, result) {
         if (result) {
           req.session["user_id"] = user.id;
           res.redirect('/urls');
