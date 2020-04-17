@@ -17,7 +17,6 @@ const getUserByEmail = (users, emailCheck) => {
       return users[user];
     }
   }
-  return false;
 }
 
 module.exports = {
