@@ -1,34 +1,35 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls"><strong>TinyApp</strong></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: space-between">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      </div> 
-        <div class="nav navbar-nav navbar-right">
-          <% if( userID === undefined ){ %>
-            <div>
-              <form class="form-inline" action="/login" method="GET">
-                <button type="submit" class="btn btn-success">Login</button>
-              </form>
-            </div>
-          <% } else { %>  
-            <div>
-              <form action="/logout" method="POST">
-                <button type="submit" class="btn btn-success">Logout</button>
-              </form>
-            </div>
-          <% } %>
-          <form action="/register" method="GET">
-            <button type="submit" class="btn btn-success">Register</button>
+      </div>
+      <p style="margin-top: 1em"><%= user.email %></p>
+      <div class="nav navbar-nav navbar-right">
+        <% if( userID === undefined ){ %>
+        <div>
+          <form class="form-inline" action="/login" method="GET">
+            <button type="submit" class="btn btn-success">Login</button>
           </form>
         </div>
-         
+        <% } else { %>
+        <div>
+          <form action="/logout" method="POST">
+            <button type="submit" class="btn btn-success">Logout</button>
+          </form>
+        </div>
+        <% } %>
+        <form action="/register" method="GET">
+          <button type="submit" class="btn btn-success">Register</button>
+        </form>
+      </div>
+
     </div>
   </nav>
 </header>
-
