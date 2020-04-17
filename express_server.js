@@ -78,7 +78,7 @@ app.route('/urls/:shortURL')
     const shortURL = req.params.shortURL;
     const longURL = req.body.longURL;
     if (req.session.user_id === urlDatabase[shortURL].userID) {
-      urlDatabase[shortURL] = longURL;
+      urlDatabase[shortURL].longURL = longURL;
       res.redirect('/urls');
     } else {
       res.send('Cannot edit URL');
@@ -106,7 +106,11 @@ app.route('/urls')
       longURL,
       userID
     }
-    res.redirect(`/urls/:${randomURL}`);
+    if (userID === undefined) {
+      res.send('Please log in to create your TinyURL')
+    } else {
+      res.redirect(`/urls/:${randomURL}`);
+    }
   });
 
 //JSON for URL Database
