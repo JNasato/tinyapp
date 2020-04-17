@@ -1,37 +1,33 @@
+//------------------------- CONSTANTS -------------------------//
+
 const express = require('express');
+const methodOverride = require('method-override');
+
 const bodyParser = require('body-parser');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+
 const app = express();
 const PORT = 8080;
 
-app.set('view engine', 'ejs');
+app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
+
+app.set('view engine', 'ejs');
 
 const helperFunctions = require('./helpers');
-const generateRandomString = helperFunctions.generateRandomString;
-const emailLookUp = helperFunctions.emailLookUp;
-const getUserByEmail = helperFunctions.getUserByEmail;
+const { generateRandomString } = helperFunctions;
+const { emailLookUp } = helperFunctions;
+const { getUserByEmail } = helperFunctions;
 
-const urlDatabase = {
-  'sgq3y6': {
-    longURL: 'https://www.example.com',
-    userID: 'userRandomID'
-  }
-};
+const urlDatabase = {};
 
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "$2b$10$OFIiXZYMIMD98fBx/SXKpumuxjl1m74h0uTwovC3hrFsfnmL4OFL6"
-  },
-};
+const users = {};
 
 //------------------------- URLs ROUTES -------------------------//
 
@@ -50,7 +46,7 @@ app.get('/urls/new', (req, res) => {
 });
 
 //DELETE request
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL/d', (req, res) => {
   const shortURL = req.params.shortURL.slice(1);
   if (req.session.user_id === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
@@ -74,8 +70,8 @@ app.route('/urls/:shortURL')
     res.render('urls_show', templateVars);
   })
   //update specified longURL to use shortURL
-  .post((req, res) => {
-    const shortURL = req.params.shortURL;
+  .put((req, res) => {
+    const shortURL = req.params.shortURL.slice(1);
     const longURL = req.body.longURL;
     if (req.session.user_id === urlDatabase[shortURL].userID) {
       urlDatabase[shortURL].longURL = longURL;
@@ -105,9 +101,9 @@ app.route('/urls')
     urlDatabase[randomURL] = {
       longURL,
       userID
-    }
+    };
     if (userID === undefined) {
-      res.send('Please log in to create your TinyURL')
+      res.send('Please log in to create your TinyURL');
     } else {
       res.redirect(`/urls/:${randomURL}`);
     }
@@ -139,7 +135,7 @@ app.route('/register')
         id: userRandomID,
         email: req.body.email,
         password: hashedPassword
-      }
+      };
 
       if (emailLookUp(users, req.body.email)) {
         res.status(400).send('Status code 400: E-mail already exists');
@@ -152,7 +148,7 @@ app.route('/register')
       } else {
         users[userRandomID] = userObj;
 
-        req.session.user_id = userRandomID;
+        req.session["user_id"] = userRandomID;
         res.redirect('/urls');
       }
     });
@@ -171,11 +167,11 @@ app.route('/login')
   })
   .post((req, res) => {
     const userEmail = req.body.email;
-    const user = getUserByEmail(users, userEmail)
+    const user = getUserByEmail(users, userEmail);
     if (emailLookUp(users, userEmail)) {
-      bcrypt.compare(req.body.password, user.password, function (err, result) {
+      bcrypt.compare(req.body.password, user.password, function(err, result) {
         if (result) {
-          req.session.user_id = user.id;
+          req.session["user_id"] = user.id;
           res.redirect('/urls');
         } else {
           res.status(403).send('Status code 403: Incorrect email or password');
@@ -201,7 +197,11 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/register');
+  if (req.session.user_id === undefined) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 

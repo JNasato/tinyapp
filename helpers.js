@@ -1,6 +1,6 @@
 const generateRandomString = (length) => {
   return Math.random().toString(36).substr(2, length);
-}
+};
 
 const emailLookUp = (users, emailCheck) => {
   for (let user in users) {
@@ -9,7 +9,7 @@ const emailLookUp = (users, emailCheck) => {
     }
   }
   return false;
-}
+};
 
 const getUserByEmail = (users, emailCheck) => {
   for (let user in users) {
@@ -17,10 +17,10 @@ const getUserByEmail = (users, emailCheck) => {
       return users[user];
     }
   }
-}
+};
 
 module.exports = {
   generateRandomString,
   emailLookUp,
   getUserByEmail
-}
+};
