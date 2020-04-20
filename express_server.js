@@ -47,7 +47,7 @@ app.get('/urls/new', (req, res) => {
 
 //DELETE request
 app.delete('/urls/:shortURL/d', (req, res) => {
-  const shortURL = req.params.shortURL.slice(1);
+  const shortURL = req.params.shortURL;
   if (req.session.user_id === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
     res.redirect('/urls');
@@ -60,7 +60,7 @@ app.delete('/urls/:shortURL/d', (req, res) => {
 app.route('/urls/:shortURL')
   //show shortURL view after creating
   .get((req, res) => {
-    const shortURL = req.params.shortURL.slice(1);
+    const shortURL = req.params.shortURL;
     const userID = req.session.user_id;
     const templateVars = {
       userID,
@@ -72,11 +72,15 @@ app.route('/urls/:shortURL')
   })
   //update specified longURL to use shortURL
   .put((req, res) => {
-    const shortURL = req.params.shortURL.slice(1);
+    const shortURL = req.params.shortURL;
     const longURL = req.body.longURL;
     if (req.session.user_id === urlDatabase[shortURL].userID) {
-      urlDatabase[shortURL].longURL = longURL;
-      res.redirect('/urls');
+      if (longURL === "") {
+        res.send('You cannot save an empty link');
+      } else {
+        urlDatabase[shortURL].longURL = longURL;
+        res.redirect('/urls');
+      }
     } else {
       res.send('Cannot edit URL');
     }
@@ -104,11 +108,15 @@ app.route('/urls')
     if (userID === undefined) {
       res.send('Please log in to create your TinyURL');
     } else {
-      urlDatabase[randomURL] = {
-        longURL,
-        userID
-      };
-      res.redirect(`/urls/:${randomURL}`);
+      if (longURL === "") {
+        res.send('You cannot save an empty link');
+      } else {
+        urlDatabase[randomURL] = {
+          longURL,
+          userID
+        };
+        res.redirect(`/urls/${randomURL}`);
+      }
     }
   });
 
